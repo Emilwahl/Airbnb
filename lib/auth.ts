@@ -3,6 +3,20 @@ import crypto from "crypto";
 const HASH_PREFIX = "scrypt";
 const KEY_LENGTH = 64;
 
+function normalizeEnvSecret(value?: string | null) {
+  if (value == null) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const hasDoubleQuotes = trimmed.startsWith("\"") && trimmed.endsWith("\"");
+  const hasSingleQuotes = trimmed.startsWith("'") && trimmed.endsWith("'");
+  if ((hasDoubleQuotes || hasSingleQuotes) && trimmed.length >= 2) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
+}
+
 export function hashPassword(password: string, salt?: string) {
   const saltValue = salt ?? crypto.randomBytes(16).toString("hex");
   const hash = crypto.scryptSync(password, saltValue, KEY_LENGTH);
@@ -24,7 +38,7 @@ function timingSafeEqualString(a: string, b: string) {
 }
 
 export function getStoredPasswordHash() {
-  const base64 = process.env.APP_PASSWORD_HASH_B64;
+  const base64 = normalizeEnvSecret(process.env.APP_PASSWORD_HASH_B64);
   if (base64) {
     try {
       return Buffer.from(base64, "base64").toString("utf8");
@@ -33,14 +47,14 @@ export function getStoredPasswordHash() {
     }
   }
 
-  const raw = process.env.APP_PASSWORD_HASH;
+  const raw = normalizeEnvSecret(process.env.APP_PASSWORD_HASH);
   return raw ?? null;
 }
 
 export function verifyPasswordFromEnv(password: string) {
-  const plain = process.env.APP_PASSWORD_PLAIN;
+  const plain = normalizeEnvSecret(process.env.APP_PASSWORD_PLAIN);
   if (plain) {
-    return timingSafeEqualString(password, plain);
+    return timingSafeEqualString(password.trim(), plain);
   }
 
   const stored = getStoredPasswordHash();
