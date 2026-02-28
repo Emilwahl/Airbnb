@@ -4,6 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Rental Tax Tracker",
   description: "Track Airbnb rentals, revenue, and tax estimates in Denmark.",
+  icons: {
+    icon: [{ url: "/icon-180x180.png", sizes: "180x180", type: "image/png" }],
+    apple: [{ url: "/icon-180x180.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 const themeInitScript = `
